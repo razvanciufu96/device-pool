@@ -3,6 +3,7 @@ import { computed, onMounted, ref, watch } from 'vue'
 import { api } from '../api'
 import { atHour, formatRange, roundUpToQuarter } from '../format'
 import BookingDialog from '../components/BookingDialog.vue'
+import ReportDamageDialog from '../components/ReportDamageDialog.vue'
 
 // The team lead's two questions: "what's free right now" and "what's free tomorrow".
 const view = ref('now')
@@ -11,6 +12,7 @@ const devices = ref([])
 const loading = ref(false)
 const error = ref('')
 const bookingDevice = ref(null)
+const damageDevice = ref(null)
 const flash = ref('')
 
 const types = ['ALL', 'PHONE', 'TABLET', 'LAPTOP']
@@ -39,11 +41,21 @@ const freeCount = computed(() => shown.value.filter((d) => d.available).length)
 
 const bookingStart = computed(() => (view.value === 'now' ? roundUpToQuarter(new Date()) : atHour(1, 9)))
 
+function showFlash(message) {
+  flash.value = message
+  setTimeout(() => (flash.value = ''), 4000)
+}
+
 function onBooked() {
-  flash.value = `Reserved ${bookingDevice.value.name}.`
+  showFlash(`Reserved ${bookingDevice.value.name}.`)
   bookingDevice.value = null
   load()
-  setTimeout(() => (flash.value = ''), 4000)
+}
+
+function onDamageReported() {
+  showFlash(`Thanks, facility management has been notified about ${damageDevice.value.name}.`)
+  damageDevice.value = null
+  load()
 }
 </script>
 
@@ -79,8 +91,9 @@ function onBooked() {
           </td>
           <td>{{ d.type.toLowerCase() }}</td>
           <td>
-            <span v-if="d.available" class="badge free">{{ view === 'now' ? 'Free' : 'Free all day' }}</span>
-            <template v-else>
+            <span v-if="d.damaged" class="badge damaged">Damaged</span>
+            <span v-else-if="d.available" class="badge free">{{ view === 'now' ? 'Free' : 'Free all day' }}</span>
+            <template v-if="!d.damaged && !d.available">
               <span class="badge busy">{{ view === 'now' ? 'In use' : 'Partly booked' }}</span>
               <div v-for="b in d.bookings" :key="b.reservationId" class="muted small">
                 {{ b.userName }}: {{ formatRange(b.start, b.end) }}
@@ -88,7 +101,12 @@ function onBooked() {
             </template>
           </td>
           <td class="right">
-            <button @click="bookingDevice = d">Reserve</button>
+            <div class="row-actions">
+              <button :disabled="d.damaged" :title="d.damaged ? 'Damaged devices can\'t be booked' : ''" @click="bookingDevice = d">
+                Reserve
+              </button>
+              <button v-if="!d.damaged" class="link small" @click="damageDevice = d">Report damage</button>
+            </div>
           </td>
         </tr>
       </tbody>
@@ -100,6 +118,12 @@ function onBooked() {
       :initial-start="bookingStart"
       @close="bookingDevice = null"
       @booked="onBooked"
+    />
+    <ReportDamageDialog
+      v-if="damageDevice"
+      :device="damageDevice"
+      @close="damageDevice = null"
+      @reported="onDamageReported"
     />
   </section>
 </template>

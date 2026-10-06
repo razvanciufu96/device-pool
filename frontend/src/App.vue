@@ -16,6 +16,7 @@ function switchUser() {
     <nav>
       <RouterLink to="/devices">Devices</RouterLink>
       <RouterLink to="/my">My reservations</RouterLink>
+      <RouterLink to="/damage">Damage reports</RouterLink>
     </nav>
     <div class="who">
       <span>{{ currentUser.name }} <small class="muted">({{ currentUser.role.toLowerCase() }})</small></span>

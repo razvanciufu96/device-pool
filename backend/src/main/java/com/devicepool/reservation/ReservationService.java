@@ -49,6 +49,9 @@ public class ReservationService {
 
 		Device device = devices.findByIdForUpdate(deviceId)
 				.orElseThrow(() -> new NotFoundException("Device " + deviceId + " not found"));
+		if (device.isDamaged()) {
+			throw new BadRequestException(device.getName() + " is reported as damaged and can't be booked");
+		}
 
 		List<Reservation> overlapping = reservations.findOverlapping(deviceId, start, end);
 		if (!overlapping.isEmpty()) {

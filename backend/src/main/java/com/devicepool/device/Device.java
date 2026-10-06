@@ -23,6 +23,8 @@ public class Device {
 
 	private String assetTag;
 
+	private boolean damaged;
+
 	protected Device() {
 	}
 
@@ -44,5 +46,13 @@ public class Device {
 
 	public String getAssetTag() {
 		return assetTag;
+	}
+
+	public boolean isDamaged() {
+		return damaged;
+	}
+
+	public void setDamaged(boolean damaged) {
+		this.damaged = damaged;
 	}
 }

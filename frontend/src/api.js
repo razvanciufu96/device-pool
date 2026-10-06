@@ -34,4 +34,7 @@ export const api = {
   reserve: (deviceId, start, end) =>
     request('POST', '/reservations', { deviceId, start: start.toISOString(), end: end.toISOString() }),
   cancel: (id) => request('DELETE', `/reservations/${id}`),
+  reportDamage: (deviceId, description) => request('POST', `/devices/${deviceId}/damage-reports`, { description }),
+  damageReports: () => request('GET', '/damage-reports'),
+  resolveDamage: (id) => request('POST', `/damage-reports/${id}/resolve`),
 }

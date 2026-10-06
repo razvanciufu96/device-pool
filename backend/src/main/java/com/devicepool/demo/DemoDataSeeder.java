@@ -1,4 +1,4 @@
-package com.devicepool.reservation;
+package com.devicepool.demo;
 
 import java.time.Clock;
 import java.time.Instant;
@@ -13,12 +13,16 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.devicepool.damage.DamageService;
 import com.devicepool.device.DeviceRepository;
+import com.devicepool.reservation.Reservation;
+import com.devicepool.reservation.ReservationRepository;
 import com.devicepool.user.AppUserRepository;
 
 /**
  * Users and devices come from a Flyway migration. Reservations depend on the current date,
- * so they are created here on the first start (only when there are none yet).
+ * so they are created here on the first start (only when there are none yet), together
+ * with one damage report so the damage page has something to show.
  */
 @Component
 @ConditionalOnProperty(name = "app.demo-data", havingValue = "true")
@@ -27,13 +31,15 @@ public class DemoDataSeeder implements ApplicationRunner {
 	private final ReservationRepository reservations;
 	private final DeviceRepository devices;
 	private final AppUserRepository users;
+	private final DamageService damage;
 	private final Clock clock;
 
 	public DemoDataSeeder(ReservationRepository reservations, DeviceRepository devices,
-			AppUserRepository users, Clock clock) {
+			AppUserRepository users, DamageService damage, Clock clock) {
 		this.reservations = reservations;
 		this.devices = devices;
 		this.users = users;
+		this.damage = damage;
 		this.clock = clock;
 	}
 
@@ -55,6 +61,11 @@ public class DemoDataSeeder implements ApplicationRunner {
 		book("DP-007", "elena@example.com", at(today.plusDays(1), 9), at(today.plusDays(1), 12));
 		// Already over, so there is some history
 		book("DP-002", "ana@example.com", at(today.minusDays(1), 10), at(today.minusDays(1), 15));
+
+		// ...and the next person found it broken
+		damage.report(users.findByEmail("mihai@example.com").orElseThrow(),
+				devices.findByAssetTag("DP-002").orElseThrow().getId(),
+				"Screen cracked in the top-left corner, touch doesn't respond there.");
 	}
 
 	private void book(String assetTag, String email, Instant start, Instant end) {

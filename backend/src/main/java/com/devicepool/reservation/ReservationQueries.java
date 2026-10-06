@@ -24,4 +24,10 @@ public class ReservationQueries {
 				.collect(Collectors.groupingBy(r -> r.getDevice().getId(),
 						Collectors.mapping(BookingSlot::from, Collectors.toList())));
 	}
+
+	/** The people who most recently had the device, up to {@code limit}, as of {@code before}. */
+	@Transactional(readOnly = true)
+	public List<BookingSlot> recentHolders(Long deviceId, Instant before, int limit) {
+		return reservations.findRecentHolders(deviceId, before, limit).stream().map(BookingSlot::from).toList();
+	}
 }

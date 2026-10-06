@@ -39,6 +39,18 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
 	@Query("select r from Reservation r join fetch r.device join fetch r.user where r.id = :id")
 	Optional<Reservation> findWithDetailsById(@Param("id") Long id);
 
+	/** Non-cancelled reservations of a device that had started by the given time, newest first. */
+	@Query("""
+			select r from Reservation r join fetch r.user
+			where r.device.id = :deviceId
+			  and r.cancelledAt is null
+			  and r.startAt <= :before
+			order by r.startAt desc
+			limit :limit
+			""")
+	List<Reservation> findRecentHolders(@Param("deviceId") Long deviceId,
+			@Param("before") Instant before, @Param("limit") int limit);
+
 	@Query("""
 			select r from Reservation r join fetch r.device
 			where r.user.id = :userId

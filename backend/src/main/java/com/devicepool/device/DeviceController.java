@@ -57,13 +57,16 @@ public class DeviceController {
 				.toList();
 	}
 
-	/** {@code bookings} lists the reservations overlapping the requested window; empty means free. */
+	/**
+	 * {@code bookings} lists the reservations overlapping the requested window.
+	 * {@code available} means: not damaged and no bookings in the window.
+	 */
 	public record DeviceDto(Long id, String name, DeviceType type, String os, String assetTag,
-			boolean available, List<BookingSlot> bookings) {
+			boolean damaged, boolean available, List<BookingSlot> bookings) {
 
 		static DeviceDto from(Device d, List<BookingSlot> bookings) {
 			return new DeviceDto(d.getId(), d.getName(), d.getType(), d.getOs(), d.getAssetTag(),
-					bookings.isEmpty(), bookings);
+					d.isDamaged(), !d.isDamaged() && bookings.isEmpty(), bookings);
 		}
 	}
 }

@@ -3,6 +3,7 @@ import { currentUser } from './session'
 import LoginView from './views/LoginView.vue'
 import DevicesView from './views/DevicesView.vue'
 import MyReservationsView from './views/MyReservationsView.vue'
+import DamageView from './views/DamageView.vue'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -11,6 +12,7 @@ const router = createRouter({
     { path: '/login', component: LoginView, meta: { public: true } },
     { path: '/devices', component: DevicesView },
     { path: '/my', component: MyReservationsView },
+    { path: '/damage', component: DamageView },
   ],
 })
 

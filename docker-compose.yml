@@ -1,0 +1,20 @@
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "8080:8080"
+    environment:
+      # Demo reservations ("tomorrow 13:00") are created in this time zone.
+      TZ: ${TZ:-Europe/Bucharest}
+    volumes:
+      - h2-data:/app/data
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+
+volumes:
+  h2-data:

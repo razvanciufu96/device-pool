@@ -65,7 +65,7 @@ public class ReservationService {
 	 */
 	@Transactional
 	public Reservation cancel(AppUser user, Long reservationId) {
-		Reservation r = reservations.findById(reservationId)
+		Reservation r = reservations.findWithDetailsById(reservationId)
 				.orElseThrow(() -> new NotFoundException("Reservation " + reservationId + " not found"));
 		if (!r.getUser().getId().equals(user.getId())) {
 			throw new ForbiddenException("You can only cancel your own reservations");

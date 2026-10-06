@@ -2,6 +2,7 @@ package com.devicepool.reservation;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -33,6 +34,10 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
 			order by r.startAt
 			""")
 	List<Reservation> findAllOverlapping(@Param("from") Instant from, @Param("to") Instant to);
+
+	/** Loads the device and user too, so callers can read them after the transaction ends. */
+	@Query("select r from Reservation r join fetch r.device join fetch r.user where r.id = :id")
+	Optional<Reservation> findWithDetailsById(@Param("id") Long id);
 
 	@Query("""
 			select r from Reservation r join fetch r.device

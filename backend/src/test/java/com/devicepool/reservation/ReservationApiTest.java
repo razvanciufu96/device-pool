@@ -1,5 +1,6 @@
 package com.devicepool.reservation;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -17,6 +18,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import com.devicepool.device.DeviceRepository;
+import com.jayway.jsonpath.JsonPath;
 
 /** Checks the HTTP contract: status codes and the shape of error responses. */
 @SpringBootTest
@@ -54,6 +56,24 @@ class ReservationApiTest {
 				.contentType(MediaType.APPLICATION_JSON).content(body))
 				.andExpect(status().isConflict())
 				.andExpect(jsonPath("$.conflicts[0].userName").value("Ana Popescu"));
+	}
+
+	@Test
+	void cancelReturnsTheCancelledReservation() throws Exception {
+		Long pixel = devices.findByAssetTag("DP-003").orElseThrow().getId();
+		Instant start = Instant.now().plus(1, ChronoUnit.DAYS).truncatedTo(ChronoUnit.HOURS);
+		String body = """
+				{"deviceId": %d, "start": "%s", "end": "%s"}
+				""".formatted(pixel, start, start.plus(1, ChronoUnit.HOURS));
+		String created = mvc.perform(post("/api/reservations").header("X-User-Id", 1)
+				.contentType(MediaType.APPLICATION_JSON).content(body))
+				.andReturn().getResponse().getContentAsString();
+		Integer id = JsonPath.read(created, "$.id");
+
+		mvc.perform(delete("/api/reservations/" + id).header("X-User-Id", 1))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.status").value("CANCELLED"))
+				.andExpect(jsonPath("$.deviceName").value("Pixel 8"));
 	}
 
 	@Test

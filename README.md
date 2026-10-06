@@ -41,6 +41,9 @@ Run the backend tests with `cd backend && ./mvnw test`.
 docker compose up --build
 ```
 
+The first build takes a few minutes (Maven and npm dependencies). The frontend container starts once the backend's
+healthcheck passes (~15 s), so the app is ready as soon as `up` reports it started.
+
 - App: **http://localhost:3000** (nginx serves the built frontend and proxies `/api` to the backend)
 - Backend API directly: http://localhost:8080/api/devices
 

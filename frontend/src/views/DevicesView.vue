@@ -53,7 +53,7 @@ function onBooked() {
 }
 
 function onDamageReported() {
-  showFlash(`Thanks, facility management has been notified about ${damageDevice.value.name}.`)
+  showFlash(`Reported. ${damageDevice.value.name} is out of the pool until facility management marks it repaired.`)
   damageDevice.value = null
   load()
 }
